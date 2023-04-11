@@ -12,23 +12,26 @@ class ViewController: UIViewController {
     @IBOutlet weak var tableView: UITableView!
     
     var users: [UserModel] = []
+    var posts: [[PostModel]] = [[]]
+    var comments: [[CommentsModel]] = [[]]
     var viewModel = ViewModel()
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.title = "Users"
         // Configuramos la tabla
         tableView.dataSource = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         tableView.cellLayoutMarginsFollowReadableWidth = true
         
-        callPostWithCallbacks()
+       // callPostWithCallbacks()
         
-        //        Task{
-        //            do {
-        //                await callPostsWithAsyncAwait()
-        //            }
-        //        }
-        
+                Task{
+                    do {
+                        await callPostsWithAsyncAwait()
+                    }
+                }
+//
         
     }
     
@@ -59,13 +62,14 @@ class ViewController: UIViewController {
                         return
                     }
                     
-                    guard let posts = posts else {
+                    guard let userPosts = posts else {
                         print("No posts found for user \(user.name).")
                         return
                     }
+                    self?.posts.append(userPosts)
                     
                     // Para cada post, obtener la lista de comentarios
-                    for post in posts {
+                    for post in userPosts {
                         self?.viewModel.fetchComments(by: post) { (comments, error) in
                             if let error = error {
                                 print("Error fetching comments: \(error.localizedDescription)")
@@ -77,7 +81,7 @@ class ViewController: UIViewController {
                                 return
                             }
                             
-                            // Imprimir los comentarios
+                            self?.comments.append(comments)
                             for comment in comments {
                                 print("Comment by \(comment.name): \(comment.body)")
                             }
@@ -92,38 +96,35 @@ class ViewController: UIViewController {
     
     
     
-    //    func callPostsWithAsyncAwait() async  {
-    //
-    //        // Llamamos a la función fetchPosts utilizando async/await
-    //
-    //        do {
-    //            // Obtener los usuarios
-    //            users = try await viewModel.fetchUsers()
-    //            DispatchQueue.main.async {
-    //                self.tableView.reloadData()
-    //            }
-    //
-    //            // Obtener los posts de cada usuario
-    //            for user in users {
-    //                let posts = try await viewModel.fetchPosts(by: user)
-    //
-    //                // Obtener los comentarios de cada post
-    //                for post in posts {
-    //                    let comments = try await viewModel.fetchComments(by: post)
-    //
-    //                    // Hacer algo con los comentarios, por ejemplo imprimirlos
-    //                    print(comments)
-    //                }
-    //            }
-    //        } catch {
-    //            print(error)
-    //        }
-    //
-    //
-    //    }
+        func callPostsWithAsyncAwait() async {
+    
+            // Llamamos a la función fetchPosts utilizando async/await
+    
+            do {
+                // Obtener los usuarios
+                users = try await viewModel.fetchUsers()
+                DispatchQueue.main.async {
+                    self.tableView.reloadData()
+                }
+    
+                // Obtener los posts de cada usuario
+                for user in users {
+                    let userPosts = try await viewModel.fetchPosts(by: user)
+                    posts.append(userPosts)
+                    
+                    // Obtener los comentarios de cada post
+                    for post in userPosts {
+                        let comments = try await viewModel.fetchComments(by: post)
+                        self.comments.append(comments)
+                    }
+                }
+            } catch {
+                print(error)
+            }
+        }
     
 }
-extension ViewController: UITableViewDataSource {
+extension ViewController: UITableViewDataSource, UITableViewDelegate {
     // Número de secciones en la tabla
     func numberOfSections(in tableView: UITableView) -> Int {
         return 1
@@ -141,6 +142,21 @@ extension ViewController: UITableViewDataSource {
         let user = users[indexPath.row]
         cell.textLabel?.text = user.name
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+         
+        let userID = self.users[indexPath.row].id
+        let filteredPosts = posts.flatMap { $0 }.filter { $0.userID == userID }
+        
+        let filteredPostComments = filteredPosts.map { post in
+            comments.flatMap { $0.filter { $0.postID == post.id } }
+        }
+       
+        let postViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "PostViewController") as! PostViewController
+        postViewController.posts = filteredPosts
+        postViewController.comments = filteredPostComments
+        self.navigationController?.pushViewController(postViewController, animated: true)
     }
     
 }

@@ -62,22 +62,22 @@ class ViewModel {
 
     // MARK: - Async / Await fetchs
     
-//    func fetchUsers() async throws -> [UserModel] {
-//        let users: [UserModel] = try await Networking.fetchData(urlString: usersURL)
-//        return users
-//    }
-//
-//    func fetchPosts(by user: UserModel) async throws -> [PostModel] {
-//        let url = makePostUrl(id: user.id)
-//        let posts: [PostModel] = try await Networking.fetchData(urlString: url)
-//        return posts
-//    }
-//
-//    func fetchComments(by post: PostModel) async throws -> [CommentsModel] {
-//        let url = makeCommentUrl(id: post.id)
-//        let comments: [CommentsModel] = try await Networking.fetchData(urlString: url)
-//        return comments
-//    }
+    func fetchUsers() async throws -> [UserModel] {
+        let users: [UserModel] = try await Networking.fetchData(urlString: usersURL)
+        return users
+    }
+
+    func fetchPosts(by user: UserModel) async throws -> [PostModel] {
+        let url = makePostUrl(id: user.id)
+        let posts: [PostModel] = try await Networking.fetchData(urlString: url)
+        return posts
+    }
+
+    func fetchComments(by post: PostModel) async throws -> [CommentsModel] {
+        let url = makeCommentUrl(id: post.id)
+        let comments: [CommentsModel] = try await Networking.fetchData(urlString: url)
+        return comments
+    }
 
     
     
