@@ -24,13 +24,19 @@ class ViewController: UIViewController {
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         tableView.cellLayoutMarginsFollowReadableWidth = true
         
-         callPostWithCallbacks()
+         //callPostWithCallbacks()
         
 //        Task{
 //            do {
 //                await callPostsWithAsyncAwait()
 //            }
 //        }
+        
+        Task{
+            do {
+                await callPostsWithMixAsyncAwaitAndCallback()
+            }
+        }
         
         
     }
@@ -122,6 +128,33 @@ class ViewController: UIViewController {
                 print(error)
             }
         }
+    
+    func callPostsWithMixAsyncAwaitAndCallback() async {
+
+        // Llamamos a la función fetchPosts utilizando async/await
+
+        do {
+            // Obtener los usuarios
+            users = try await viewModel.fetchUsersMix()
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
+
+            // Obtener los posts de cada usuario
+            for user in users {
+                let userPosts = try await viewModel.fetchPosts(by: user)
+                posts.append(userPosts)
+                
+                // Obtener los comentarios de cada post
+                for post in userPosts {
+                    let comments = try await viewModel.fetchComments(by: post)
+                    self.comments.append(comments)
+                }
+            }
+        } catch {
+            print(error)
+        }
+    }
     
 }
 extension ViewController: UITableViewDataSource, UITableViewDelegate {

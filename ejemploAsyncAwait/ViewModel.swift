@@ -79,6 +79,18 @@ class ViewModel {
         return comments
     }
 
+    // MARK: - Mixing Async / Await and Completion
     
-    
+    func fetchUsersMix() async throws -> [UserModel] {
+        return await withCheckedContinuation { continuation in
+            Networking.requestData(urlString: usersURL) { (result: Result<[UserModel], Error>) in
+                switch result {
+                case .success(let users):
+                    continuation.resume(returning: users)
+                case .failure(let error):
+                    continuation.resume(throwing: error as! Never)
+                }
+            }
+        }
+    }
 }
