@@ -24,14 +24,14 @@ class ViewController: UIViewController {
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         tableView.cellLayoutMarginsFollowReadableWidth = true
         
-       // callPostWithCallbacks()
+         callPostWithCallbacks()
         
-                Task{
-                    do {
-                        await callPostsWithAsyncAwait()
-                    }
-                }
-//
+//        Task{
+//            do {
+//                await callPostsWithAsyncAwait()
+//            }
+//        }
+        
         
     }
     

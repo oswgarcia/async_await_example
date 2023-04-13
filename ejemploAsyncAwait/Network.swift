@@ -9,6 +9,7 @@ import Foundation
 
 class Networking {
     
+    // MARK: Callback
    static func requestData<T: Codable>(urlString: String, completion: @escaping (Result<T, Error>) -> Void) {
 
         guard let url = URL(string: urlString) else {
@@ -32,6 +33,8 @@ class Networking {
         task.resume()
     }
     
+    
+    // MARK: Asycn / Await
     static func fetchData<T: Codable>(urlString: String) async throws -> T {
         guard let url = URL(string: urlString) else {
             throw NSError(domain: "Invalid URL", code: 0, userInfo: nil)
